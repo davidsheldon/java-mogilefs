@@ -26,7 +26,7 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	
 	private String domain;
 	
-	protected List trackers;
+	protected List<InetSocketAddress> trackers;
 	
 	private ObjectPool cachedBackendPool;
 	
@@ -55,7 +55,7 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	 * @return a List of InetSocketAddress objects.
 	 * @throws BadHostFormatException if one of the strings isn't in the right format.
 	 */
-	protected List parseHosts(String[] hostStrings) throws BadHostFormatException {
+	protected List<InetSocketAddress> parseHosts(String[] hostStrings) throws BadHostFormatException {
 		if (hostStrings == null) {
 			return Collections.emptyList();
 		}
@@ -259,11 +259,9 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	        }
 	        
 	        // wait a little while before continuing
-	        if (retrySleepTime > 0) {
-	            try { Thread.sleep(retrySleepTime); } catch (Exception e) {};
-	        }
-	
-	        log.info("Error storing file to mogile - attempting to reconnect and try again (attempt #" + attempt + ")");
+			retrySleep();
+
+			log.info("Error storing file to mogile - attempting to reconnect and try again (attempt #" + attempt + ")");
 	    }
 	    
 	    throw new MogileException("Unable to store file on mogile after multiple attempts");
@@ -405,7 +403,7 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	 * @param key
 	 * @throws NoTrackersException
 	 */
-	public void delete(String key) throws NoTrackersException, NoTrackersException {
+	public void delete(String key) throws NoTrackersException {
 	    int attempt = 1;
 	    
 	    Backend backend = null;
@@ -432,12 +430,19 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	      }
 	
 	      // something went wrong - so wait a little while before continuing
-	      if (retrySleepTime > 0) {
-	          try { Thread.sleep(retrySleepTime); } catch (Exception e) {};
-	      }
-	    }
+			retrySleep();
+		}
 	
 	   throw new NoTrackersException();
+	}
+
+	/**
+	 * Something went wrong - so wait a little while before continuing
+	 */
+	private void retrySleep() {
+		if (retrySleepTime > 0) {
+			try { Thread.sleep(retrySleepTime); } catch (Exception e) {}
+		}
 	}
 
 	/**
@@ -496,10 +501,8 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	      }
 	
 	      // something went wrong - so wait a little while before continuing
-	      if (retrySleepTime > 0) {
-	          try { Thread.sleep(retrySleepTime); } catch (Exception e) {};
-	      }
-	    }
+			retrySleep();
+		}
 	
 	   throw new NoTrackersException();
 	}
@@ -554,10 +557,8 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	      }
 	
 	      // something went wrong - so wait a little while before continuing
-	      if (retrySleepTime > 0) {
-	          try { Thread.sleep(retrySleepTime); } catch (Exception e) {};
-	      }
-	    }
+			retrySleep();
+		}
 	
 	    throw new NoTrackersException();
 	}

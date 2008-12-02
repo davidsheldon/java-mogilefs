@@ -1,6 +1,7 @@
 package com.guba.mogilefs;
 
 import java.util.List;
+import java.net.InetSocketAddress;
 
 import org.apache.commons.pool.PoolableObjectFactory;
 import org.apache.log4j.Logger;
@@ -9,9 +10,9 @@ public class PoolableBackendFactory implements PoolableObjectFactory {
     
     private Logger log = Logger.getLogger(PoolableBackendFactory.class);
     
-    private List trackers;
+    private List<InetSocketAddress> trackers;
     
-    public PoolableBackendFactory(List trackers) {
+    public PoolableBackendFactory(List<InetSocketAddress> trackers) {
         log.debug("new backend factory created");
         
         this.trackers = trackers;

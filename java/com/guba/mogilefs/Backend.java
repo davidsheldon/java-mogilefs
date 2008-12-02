@@ -60,16 +60,15 @@ class Backend {
      * Create the backend. Optionally connect to a tracker right now to ensure
      * one is available right off the bat.
      * 
-     * @param hostStrings
-     *            Array of hostnames of trackers
-     * @param connect
+     * @param trackers
+	 * 			List of tracker sockets
+     * @param connectNow
      *            if true, try to connect to a socket
      * 
      * @throws NoTrackersException
-     * @throws BadHostFormatException
      */
 
-    public Backend(List trackers, boolean connectNow)
+    public Backend(List<InetSocketAddress> trackers, boolean connectNow)
             throws NoTrackersException {
         reload(trackers, connectNow);
     }
@@ -78,13 +77,14 @@ class Backend {
      * Reset the list of trackers. Optionally try to connect to one of them
      * immediately.
      * 
-     * @param hostStrings
-     * @param connect
+	 * @param trackers
+	 * 			List of tracker sockets
+	 * @param connectNow
+	 *            if true, try to connect to a socket
      * @throws NoTrackersException
-     * @throws BadHostFormatException
      */
 
-    public void reload(List trackers, boolean connectNow)
+    public void reload(List<InetSocketAddress> trackers, boolean connectNow)
             throws NoTrackersException {
         this.hosts = trackers;
 
@@ -109,6 +109,7 @@ class Backend {
      * This function never returns null.
      * 
      * @return
+	 * @throws NoTrackersException
      */
 
     private SocketWithReaderAndWriter getSocket() throws NoTrackersException {
