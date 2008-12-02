@@ -13,6 +13,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,15 +33,16 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	private int maxRetries = -1;
 	private int retrySleepTime = 2000;
 
-  private boolean keepPathOrder;
+	/* Should we preserve the order of paths that we get from the server. */
+	private boolean keepPathOrder;
 
-  public BaseMogileFSImpl(String domain, String[] trackerStrings) throws BadHostFormatException, NoTrackersException {
-    this(domain, trackerStrings, false);
-  }
+	public BaseMogileFSImpl(String domain, String[] trackerStrings) throws BadHostFormatException, NoTrackersException {
+		this(domain, trackerStrings, false);
+	}
 
-  public BaseMogileFSImpl(String domain, String[] trackerStrings, boolean shouldKeepPathOrder) throws BadHostFormatException, NoTrackersException {
-    keepPathOrder = shouldKeepPathOrder;
-    trackers = parseHosts(trackerStrings);
+	public BaseMogileFSImpl(String domain, String[] trackerStrings, boolean shouldKeepPathOrder) throws BadHostFormatException, NoTrackersException {
+		keepPathOrder = shouldKeepPathOrder;
+		trackers = parseHosts(trackerStrings);
 
         reload(domain);    			
 	}
@@ -49,29 +51,32 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	 * Parse the host strings to InetSocketAddress objects. If something can't
 	 * be parsed, an exception is thrown.
 	 * 
-	 * @param hosts
-	 * @return
+	 * @param hostStrings array of host:port string pairs
+	 * @return a List of InetSocketAddress objects.
+	 * @throws BadHostFormatException if one of the strings isn't in the right format.
 	 */
 	protected List parseHosts(String[] hostStrings) throws BadHostFormatException {
-	    List<InetSocketAddress> list = new ArrayList<InetSocketAddress>(hostStrings.length);
+		if (hostStrings == null) {
+			return Collections.emptyList();
+		}
+		List<InetSocketAddress> list = new ArrayList<InetSocketAddress>(hostStrings.length);
 	    Pattern hostAndPortPattern = Pattern.compile("^(\\S+):(\\d+)$");
 	
-	    if (hostStrings != null) {
-	        for (int i = 0; i < hostStrings.length; i++) {
-	            Matcher m = hostAndPortPattern.matcher(hostStrings[i]);
-	            if (!m.matches())
-	                throw new BadHostFormatException(hostStrings[i]);
-	
-	            if (log.isDebugEnabled()) {
-	                log.debug("parsed tracker " + hostStrings[i]);
-	            }
-	
-	            InetSocketAddress addr = new InetSocketAddress(m.group(1),
-	                    Integer.parseInt(m.group(2)));
-	            list.add(addr);
-	        }
-	    }
-	
+		for (int i = 0; i < hostStrings.length; i++) {
+			final String hostString = hostStrings[i];
+			Matcher m = hostAndPortPattern.matcher(hostString);
+			if (!m.matches())
+				throw new BadHostFormatException(hostString);
+
+			if (log.isDebugEnabled()) {
+				log.debug("parsed tracker " + hostString);
+			}
+
+			InetSocketAddress addr = new InetSocketAddress(m.group(1),
+					Integer.parseInt(m.group(2)));
+			list.add(addr);
+		}
+
 	    return list;
 	}
 
@@ -79,10 +84,8 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	 * Set things up again.
 	 * 
 	 * @param domain
-	 * @param trackers
-	 *            try to connect to a tracker immediately - this lets you know
-	 *            you've got trackers running right off the bat.
-	 * @throws NoTrackerException
+	 * @param trackerStrings
+	 * @throws NoTrackersException
 	 */
 	public void reload(String domain, String trackerStrings[]) throws NoTrackersException, BadHostFormatException {
 	    this.trackers = parseHosts(trackerStrings);
@@ -118,9 +121,10 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	 * implementation returns null on an error, but this one throws an exception
 	 * if something goes wrong, so null is never returned.
 	 * 
-	 * @param key
-	 * @param storageClass
-	 * @return
+	 * @param key name to give the new file
+	 * @param storageClass the class to store it under
+	 * @param byteCount the size of the new file (needed for content-length header
+	 * @return non-null stream you should write byteCount bytes to
 	 */
 	public OutputStream newFile(String key, String storageClass, long byteCount) throws NoTrackersException, TrackerCommunicationException, StorageCommunicationException {
 	    Backend backend = null;
@@ -319,7 +323,7 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	        try {
 	            URL pathURL = new URL(path);
 	            if (log.isDebugEnabled())
-	                log.debug("retrieving file from " + path + " (attempt #" + (paths.hashCode() - tries) + ")");
+	                log.debug("retrieving file from " + path + " (attempt #" + (paths.length - tries) + ")");
 	            
 	            HttpURLConnection conn = (HttpURLConnection) pathURL.openConnection();
 	            InputStream in = conn.getInputStream();
@@ -376,7 +380,7 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	        try {
 	            URL pathURL = new URL(path);
 	            if (log.isDebugEnabled())
-	                log.debug("retrieving file from " + path + " (attempt #" + (paths.hashCode() - tries) + ")");
+	                log.debug("retrieving file from " + path + " (attempt #" + (paths.length - tries) + ")");
 	            
 	            return pathURL.openStream();
 	
@@ -460,7 +464,8 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	 * Rename the given key. Note that you won't get an error if the key doesn't
 	 * exist.
 	 * 
-	 * @param key
+	 * @param fromKey
+	 * @param toKey
 	 * @throws NoTrackersException
 	 */
 	public void rename(String fromKey, String toKey) throws NoTrackersException {
@@ -504,6 +509,8 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	 * null if there was an error from the server.
 	 * 
 	 * @param key
+	 * @param noverify If true, then ask the server not to bother checking that the
+	 *           paths it's going to return are valid.
 	 * @return array of Strings that are URLs that specify where this file is
 	 *         stored, or null if there was an error
 	 * @throws NoTrackersException
