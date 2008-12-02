@@ -19,8 +19,21 @@ public class PooledMogileFSImpl extends BaseMogileFSImpl {
 	private int maxTrackerConnections;
 	private int maxIdleConnections;
 	private long maxIdleTimeMillis;
-	
-    /**
+
+  /**
+     * Set things up. Make sure you pass in at least one valid tracker, or
+   * you'll get an exception.
+   *
+   * @throws com.guba.mogilefs.NoTrackersException
+   *             if we can't connect to at least one tracker
+   */
+  public PooledMogileFSImpl(String domain, String trackerStrings[], int maxTrackerConnections,
+          int maxIdleConnections, long maxIdleTimeMillis)
+          throws NoTrackersException, BadHostFormatException {
+    this(domain, trackerStrings, maxTrackerConnections, maxIdleConnections, maxIdleTimeMillis, false);
+  }
+
+  /**
      * Set things up. Make sure you pass in at least one valid tracker, or
      * you'll get an exception.
      * 
@@ -28,9 +41,9 @@ public class PooledMogileFSImpl extends BaseMogileFSImpl {
      *             if we can't connect to at least one tracker
      */
     public PooledMogileFSImpl(String domain, String trackerStrings[], int maxTrackerConnections,
-            int maxIdleConnections, long maxIdleTimeMillis)
+                              int maxIdleConnections, long maxIdleTimeMillis, final boolean shouldKeepPathOrder)
             throws NoTrackersException, BadHostFormatException {
-    	super(domain, trackerStrings);
+    	super(domain, trackerStrings, shouldKeepPathOrder);
 
     	this.maxIdleConnections = maxIdleConnections;
     	this.maxTrackerConnections = maxTrackerConnections;
