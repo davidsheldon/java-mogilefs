@@ -32,8 +32,15 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	private int maxRetries = -1;
 	private int retrySleepTime = 2000;
 
-	public BaseMogileFSImpl(String domain, String[] trackerStrings) throws BadHostFormatException, NoTrackersException {
-        trackers = parseHosts(trackerStrings);
+  private boolean keepPathOrder;
+
+  public BaseMogileFSImpl(String domain, String[] trackerStrings) throws BadHostFormatException, NoTrackersException {
+    this(domain, trackerStrings, false);
+  }
+
+  public BaseMogileFSImpl(String domain, String[] trackerStrings, boolean shouldKeepPathOrder) throws BadHostFormatException, NoTrackersException {
+    keepPathOrder = shouldKeepPathOrder;
+    trackers = parseHosts(trackerStrings);
 
         reload(domain);    			
 	}
@@ -303,7 +310,7 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	
 	    // randomly pick one of the files to retrieve and if that fails, try
 	    // to get another one
-	    int startIndex = (int) Math.floor(Math.random() * paths.length);
+	    int startIndex = keepPathOrder ? 0 : (int) Math.floor(Math.random() * paths.length);
 	    int tries = paths.length;
 	
 	    while (tries-- > 0) {
@@ -360,7 +367,7 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	
 	    // randomly pick one of the files to retrieve and if that fails, try
 	    // to get another one
-	    int startIndex = (int) Math.floor(Math.random() * paths.length);
+	    int startIndex = keepPathOrder ? 0 : (int) Math.floor(Math.random() * paths.length);
 	    int tries = paths.length;
 	
 	    while (tries-- > 0) {
