@@ -65,9 +65,11 @@ public class Mogtool {
 			setDomain(configMap.get("domain"));
 			setTrackers(configMap.get("trackers"));
 			setVerify(configMap.get("verify"));
+      setStorageClass(configMap.get("class"));
 
 			setDomain(line.getOptionValue("d"));
 			setTrackers(line.getOptionValue("t"));
+      setStorageClass(line.getOptionValue("c"));
 
 
 			if (domain == null || trackers == null) {
@@ -97,7 +99,13 @@ public class Mogtool {
 			}
 		}
 
-		private List<String> getConfigFiles(CommandLine line) {
+    public void setStorageClass(final String val) {
+      if (val != null) {
+        this.storageClass = val;
+      }
+    }
+
+    private List<String> getConfigFiles(CommandLine line) {
 			List<String> ret = new LinkedList<String>();
 			ret.add(line.getOptionValue("conf"));
 			ret.add(System.getenv("HOME") + "/.mogtool");
