@@ -65,11 +65,11 @@ public class Mogtool {
 			setDomain(configMap.get("domain"));
 			setTrackers(configMap.get("trackers"));
 			setVerify(configMap.get("verify"));
-      setStorageClass(configMap.get("class"));
+			setStorageClass(configMap.get("class"));
 
 			setDomain(line.getOptionValue("d"));
 			setTrackers(line.getOptionValue("t"));
-      setStorageClass(line.getOptionValue("c"));
+			setStorageClass(line.getOptionValue("c"));
 
 
 			if (domain == null || trackers == null) {
@@ -99,13 +99,13 @@ public class Mogtool {
 			}
 		}
 
-    public void setStorageClass(final String val) {
-      if (val != null) {
-        this.storageClass = val;
-      }
-    }
+		public void setStorageClass(final String val) {
+			if (val != null) {
+				this.storageClass = val;
+			}
+		}
 
-    private List<String> getConfigFiles(CommandLine line) {
+       private List<String> getConfigFiles(CommandLine line) {
 			List<String> ret = new LinkedList<String>();
 			ret.add(line.getOptionValue("conf"));
 			ret.add(System.getenv("HOME") + "/.mogtool");
@@ -159,14 +159,16 @@ public class Mogtool {
 				"- listkey - TODO\n" +
 				"Just like in the perl mogtool but without bigfiles.");
 
-			
+
 
 		}
 
 		protected MogileFS createMogileFS() throws NoTrackersException, BadHostFormatException {
-			return new PooledMogileFSImpl(domain, trackers,
-				5, 2, 30000);
-	}
+            final PooledMogileFSImpl mogFs = new PooledMogileFSImpl(domain, trackers, 5, 2, 30000);
+			// The Perl mogTool doesn't retry if it breaks.
+            mogFs.setMaxRetries(0);
+            return mogFs;
+		}
 
 		public String getStorageClass() {
 			return storageClass;
