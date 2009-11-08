@@ -357,7 +357,7 @@ class Backend {
      */
 
     private Map<String, String> decodeURLString(String encoded) {
-        HashMap<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<String, String>();
         try {
             if ((encoded == null) || (encoded.length() == 0))
                 return map;
