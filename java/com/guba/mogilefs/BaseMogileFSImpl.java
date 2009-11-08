@@ -344,7 +344,7 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	        }
 	    }
 	    
-	    StringBuffer pathString = new StringBuffer();
+	    StringBuilder pathString = new StringBuilder();
 	    for (int i = 0; i < paths.length; i++) {
 	        if (i > 0)
 	            pathString.append(", ");
@@ -390,7 +390,7 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	        }
 	    }
 	    
-	    StringBuffer pathString = new StringBuffer();
+	    StringBuilder pathString = new StringBuilder();
 	    for (int i = 0; i < paths.length; i++) {
 	        if (i > 0)
 	            pathString.append(", ");
