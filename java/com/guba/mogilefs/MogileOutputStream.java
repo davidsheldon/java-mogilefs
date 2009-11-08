@@ -126,7 +126,7 @@ public class MogileOutputStream extends OutputStream {
         int responseCode = Integer.parseInt(matcher.group(1));
         if ((responseCode < 200) || (responseCode > 299)) {
             // we got an error - read through to the body
-            StringBuffer fullResponse = new StringBuffer();
+            StringBuilder fullResponse = new StringBuilder();
             fullResponse.append("Problem storing to ");
             fullResponse.append(path.toString());
             fullResponse.append("\n\n");
