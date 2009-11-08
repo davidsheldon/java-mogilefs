@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  */
 class Backend {
 
-    private static Logger log = Logger.getLogger(Backend.class);
+    private static final Logger log = Logger.getLogger(Backend.class);
 
     private List hosts;
 
@@ -46,7 +46,7 @@ class Backend {
 
     private SocketWithReaderAndWriter cachedSocket;
 
-    private Pattern ERROR_PATTERN = Pattern.compile("^ERR\\s+(\\w+)\\s*(\\S*)");
+    private static final Pattern ERROR_PATTERN = Pattern.compile("^ERR\\s+(\\w+)\\s*(\\S*)");
 
     private static final int ERR_PART = 1;
 
