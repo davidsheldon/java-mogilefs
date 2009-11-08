@@ -254,16 +254,7 @@ public class MogileOutputStream extends OutputStream {
     }
 
     public void write(byte[] b) throws IOException {
-        if ((out == null) || (socket == null))
-            throw new IOException("socket has been closed already");
-
-        try {
-            count += b.length;
-            out.write(b);
-        } catch (IOException e) {
-            log.error("wrote at most " + count + "/" + totalBytes + " of stream to storage node " + socket.getInetAddress().getHostName());
-            throw e;
-        }
+        write(b, 0, b.length);
     }
     
     private Backend borrowBackend() throws NoTrackersException {
