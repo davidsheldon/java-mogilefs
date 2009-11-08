@@ -303,7 +303,7 @@ class Backend {
      */
 
     private String listKnownTrackers() {
-        StringBuffer trackers = new StringBuffer();
+        StringBuilder trackers = new StringBuilder();
         Iterator it = hosts.iterator();
         while (it.hasNext()) {
             InetSocketAddress host = (InetSocketAddress) it.next();
@@ -325,7 +325,7 @@ class Backend {
 
     private String encodeURLString(String[] args) {
         try {
-            StringBuffer encoded = new StringBuffer();
+            StringBuilder encoded = new StringBuilder();
 
             for (int i = 0; i < args.length; i += 2) {
                 String key = args[i];
