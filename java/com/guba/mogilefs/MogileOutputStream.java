@@ -15,6 +15,7 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -102,6 +103,15 @@ public class MogileOutputStream extends OutputStream {
                     "problem initiating communication with storage server before storing "
                             + path + ": " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Get the underlying SocketChannel
+     *
+     * @return Underlying SocketChannel
+     */
+    public SocketChannel getChannel() {
+        return socket.getChannel();
     }
 
     public void close() throws IOException {
