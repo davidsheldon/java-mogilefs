@@ -98,6 +98,7 @@ public class MogileOutputStream extends OutputStream {
             writer.write("\r\n\r\n");
             writer.flush();
         } catch (IOException e) {
+            close1();
             // problem talking to the storage server
             throw new StorageCommunicationException(
                     "problem initiating communication with storage server before storing "
