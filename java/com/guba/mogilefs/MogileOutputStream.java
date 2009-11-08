@@ -107,47 +107,41 @@ public class MogileOutputStream extends OutputStream {
     public void close() throws IOException {
         if ((out == null) || (socket == null))
             throw new IOException("socket has been closed already");
+        try {
+            out.flush();
 
-        out.flush();
+            String response = reader.readLine();
+            if (response == null)
+                throw new IOException("no response after putting file to "
+                        + path.toString());
 
-        String response = reader.readLine();
-        if (response == null)
-            throw new IOException("no response after putting file to "
-                    + path.toString());
+            Pattern validResponse = Pattern.compile("^HTTP/\\d+\\.\\d+\\s+(\\d+)");
+            Matcher matcher = validResponse.matcher(response);
 
-        Pattern validResponse = Pattern.compile("^HTTP/\\d+\\.\\d+\\s+(\\d+)");
-        Matcher matcher = validResponse.matcher(response);
-
-        if (!matcher.find()) {
-            throw new IOException("response from put to " + path.toString()
-                    + " not understood: " + response);
-        }
-
-        int responseCode = Integer.parseInt(matcher.group(1));
-        if ((responseCode < 200) || (responseCode > 299)) {
-            // we got an error - read through to the body
-            StringBuilder fullResponse = new StringBuilder();
-            fullResponse.append("Problem storing to ");
-            fullResponse.append(path.toString());
-            fullResponse.append("\n\n");
-            fullResponse.append(response);
-            fullResponse.append("\n");
-            while ((response = reader.readLine()) != null) {
-                fullResponse.append(response);
-                fullResponse.append("\n");
+            if (!matcher.find()) {
+                throw new IOException("response from put to " + path.toString()
+                        + " not understood: " + response);
             }
 
-            throw new IOException(fullResponse.toString());
+            int responseCode = Integer.parseInt(matcher.group(1));
+            if ((responseCode < 200) || (responseCode > 299)) {
+                // we got an error - read through to the body
+                StringBuilder fullResponse = new StringBuilder();
+                fullResponse.append("Problem storing to ");
+                fullResponse.append(path.toString());
+                fullResponse.append("\n\n");
+                fullResponse.append(response);
+                fullResponse.append("\n");
+                while ((response = reader.readLine()) != null) {
+                    fullResponse.append(response);
+                    fullResponse.append("\n");
+                }
+
+                throw new IOException(fullResponse.toString());
+            }
+        } finally {
+            close1();
         }
-
-        out.close();
-        out = null;
-
-        reader.close();
-        reader = null;
-
-        socket.close();
-        socket = null;
 
         Backend backend = null;
         try {
@@ -193,6 +187,36 @@ public class MogileOutputStream extends OutputStream {
         } finally {
             if (backend != null)
                 returnBackend(backend);
+        }
+    }
+
+    /**
+     * Close all network stuff
+     */
+    private void close1() {
+        if (out != null) {
+            try {
+                out.close();
+            } catch (IOException ex) {
+                log.error(ex);
+            }
+            out = null;
+        }
+        if (reader != null) {
+            try {
+                reader.close();
+            } catch (IOException ex) {
+                log.error(ex);
+            }
+            reader = null;
+        }
+        if (socket != null) {
+            try {
+                socket.close();
+            } catch (IOException ex) {
+                log.error(ex);
+            }
+            socket = null;
         }
     }
 
