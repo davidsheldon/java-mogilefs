@@ -290,20 +290,20 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	    if (in == null) {
 	        return null;
 	    }
+        try {
+            OutputStream out = new FileOutputStream(destination);
             try {
-                OutputStream out = new FileOutputStream(destination);
-                try {
-                    byte[] buffer = new byte[4096];
-                    int count = 0;
-                    while ((count = in.read(buffer)) >= 0) {
-                        out.write(buffer, 0, count);
-                    }
-                } finally {
-                    out.close();
+                byte[] buffer = new byte[4096];
+                int count = 0;
+                while ((count = in.read(buffer)) >= 0) {
+                    out.write(buffer, 0, count);
                 }
             } finally {
-                in.close();
+                out.close();
             }
+        } finally {
+            in.close();
+        }
 	    
 	    return destination;
 	}
