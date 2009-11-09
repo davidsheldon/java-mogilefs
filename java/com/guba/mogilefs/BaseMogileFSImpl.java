@@ -10,6 +10,8 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.channels.FileChannel;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -218,27 +220,25 @@ public abstract class BaseMogileFSImpl implements MogileFS {
 	                            (String) response.get("fid"),
 	                            (String) response.get("path"), (String) response
 	                                    .get("devid"), key, file.length());
+                        try {
+                            FileInputStream in = new FileInputStream(file);
                             try {
-                                FileInputStream in = new FileInputStream(file);
-                                try {
-                                    long fileLength = file.length();
-                                    long transferred = in.getChannel().transferTo(0, fileLength, out.getChannel());
-                                    if (fileLength == transferred) {
-                                        // success!
-                                        return;
-                                    } else {
-                                        log.warn(String.format(
-                                                "not all file contents were transferred: %d / %d bytes; file: %s",
-                                                transferred,
-                                                fileLength,
-                                                response.get("path")));
-                                    }
-                                } finally {
-                                    in.close();
+                                SocketChannel socketChannel = out.getChannel();
+                                FileChannel fileChannel = in.getChannel();
+                                long position = 0;
+                                long count = file.length();
+                                while(position < count) {
+                                    position += fileChannel.transferTo(position, count - position, socketChannel);
                                 }
+
+                                // success!
+                                return;
                             } finally {
-                                out.close();
+                                in.close();
                             }
+                        } finally {
+                            out.close();
+                        }
 	                } catch (MalformedURLException e) {
 	                    // hrmm.. this shouldn't happen - we'll blame it on the tracker
 	                    log.warn("error trying to retrieve file with malformed url: " +  response.get("path"));
